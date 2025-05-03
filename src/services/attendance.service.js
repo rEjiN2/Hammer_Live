@@ -8,8 +8,6 @@ const Customer = require('../models/customer.model.js');
 
 
 const createAttendence = async (branchData, userData) => {
-
-
     try {
 
         const { CustomerId, CheckinTime, AttendanceDate } = branchData;

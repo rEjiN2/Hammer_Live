@@ -3,7 +3,6 @@ const jwtProvider=require("../config/jwtProvider.js")
 const bcrypt=require("bcrypt")
 
 const login=async(req,res)=>{
-    console.log(req.user,"this is user")
     const {password,email}=req.body;
     try {
         const user = await userService.getUserByEmail(email);
@@ -26,4 +25,23 @@ const login=async(req,res)=>{
         return res.status(500).send({error:error.message})
     }
 }
-module.exports={login}
+
+
+const signup = async (req, res) => {
+     const { body } = req;
+    try {
+        const user = await userService.createUser(body);
+        if(!user.status) {
+            return res.status(400).send({ message: user.message });
+        }
+        return res.status(200).send(user.data);
+    } catch (error) {
+        return res.status(200).send({ error: error.message });
+    }
+}
+module.exports=
+{
+    login,
+    signup,
+
+}

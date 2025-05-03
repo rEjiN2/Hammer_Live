@@ -6,4 +6,6 @@ const {authenticate} = require('../middleware/authenticat.js')
 
 router.post("/signin",authController.login);
 
+router.post("/signup",authController.signup);
+
 module.exports=router;

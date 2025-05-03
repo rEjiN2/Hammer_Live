@@ -7,34 +7,28 @@
 // }
 
 // module.exports={connectDb}
-
 const mongoose = require("mongoose");
-// const logger = require("./logger");
-// const { isDev } = require("./index");
-
 mongoose.Promise = global.Promise;
+mongoose.set('bufferCommands', false); // disable buffering
+// mongoose.set("debug", true); // optional
 
-const option = { 
-    useNewUrlParser: true, 
-    useUnifiedTopology: true,
-    serverSelectionTimeoutMS: 30000, // Increase from default 10000ms to 30000ms
-    socketTimeoutMS: 45000, // Increase socket timeout
-  };
-// if (isDev()) {
-//   option.autoIndex = false;
-// }
+const options = { 
+  useNewUrlParser: true, 
+  useUnifiedTopology: true,
+  serverSelectionTimeoutMS: 30000, 
+  socketTimeoutMS: 45000,
+};
 
 const connectDb = async () => {
   try {
-    await mongoose.connect(process.env.MONGO, option);
-    // logger.info("MongoDB Connection ok!");
+    await mongoose.connect(process.env.MONGO, options);
+    console.log("MongoDB Connection ok!");
     global.defaultSettings = { language: "eng" };
-    // mongoose.set("debug", true);
     return true;
   } catch (err) {
-    // logger.error(`MongoDB Connection error: ${err.message}`);
+    console.error(`MongoDB Connection error: ${err.message}`);
     return false;
   }
 };
 
-module.exports = {connectDb};
+module.exports = { connectDb };

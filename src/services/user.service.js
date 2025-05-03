@@ -19,9 +19,18 @@ const createUser = async (userData)=>{
     
         const user=await User.create({firstName,lastName,email,password,role})
 
-        console.log("user ",user)
-    
-        return user;
+        // console.log("user ",user)
+       if(!user){
+           return {
+            status:false,
+            data : "user not created",
+        };
+       }
+
+       return {
+        status:true,
+        data: user
+       }
         
     } catch (error) {
         console.log("error - ",error.message)
