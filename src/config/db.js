@@ -14,7 +14,12 @@ const mongoose = require("mongoose");
 
 mongoose.Promise = global.Promise;
 
-const option = { useNewUrlParser: true, useUnifiedTopology: true };
+const option = { 
+    useNewUrlParser: true, 
+    useUnifiedTopology: true,
+    serverSelectionTimeoutMS: 30000, // Increase from default 10000ms to 30000ms
+    socketTimeoutMS: 45000, // Increase socket timeout
+  };
 // if (isDev()) {
 //   option.autoIndex = false;
 // }
