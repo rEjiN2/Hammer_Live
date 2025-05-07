@@ -2,17 +2,19 @@ const attendanceService = require("../services/attendance.service")
 
 
 
-const createAttendence = async (req, res) => {
+const checkIn = async (req, res) => {
     try {
-        const attendance = await attendanceService.createAttendence(req.body,req.user);
+        const attendance = await attendanceService.checkIn(req.body,req.user);
         return res.status(200).send(attendance);
     } catch (error) {
         return res.status(500).send({ error: error.message });
     }
 }
-const getAttendence = async (req, res) => {
+const getAllAttendance = async (req, res) => {
     try {
-        const attendance = await attendanceService.getAttendence(req,res);
+        const selectedDate = req.query.attendanceDate;
+        const { attendance, pagination } = await attendanceService.getAllAttendance(selectedDate, req.query);
+        res.set('X-Pagination', JSON.stringify(pagination)); // Now handled in controller
         return res.status(200).send(attendance);
     } catch (error) {
         return res.status(500).send({ error: error.message });
@@ -21,4 +23,4 @@ const getAttendence = async (req, res) => {
 
 
 
-module.exports = { createAttendence,getAttendence}
+module.exports = { checkIn,getAllAttendance}

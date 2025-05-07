@@ -1,5 +1,15 @@
 const customerService = require("../services/customer.service.js")
 
+const getCustomerDetailsById = async (req, res) => {
+    try {
+        const customers = await customerService.getCustomerDetailsById(req.query.customerId);
+        
+        return res.status(200).send(customers);
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+};
+
 const getAllCustomer = async (req, res) => {
     try {
         const { customers, pagination } = await customerService.getAllCustomer(req.query);
@@ -33,4 +43,4 @@ const updateCustomer = async (req, res) => {
 
 }
 
-module.exports = { getAllCustomer, createCustomer, updateCustomer }
+module.exports = { getCustomerDetailsById, getAllCustomer, createCustomer, updateCustomer }

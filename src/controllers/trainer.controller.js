@@ -4,7 +4,7 @@ const getAllTrainer = async (req, res) => {
     try {
         const { trainers, pagination } = await trainerService.getAllTrainer(req.query);
         
-        res.set('X-Pagination', JSON.stringify(pagination)); 
+        res.set('X-Pagination', JSON.stringify(pagination)); // Now handled in controller
         return res.status(200).json(trainers);
     } catch (error) {
         return res.status(500).json({ message: error.message });

@@ -1,31 +1,36 @@
 const mongoose = require("mongoose");
 
 
-const trainerSchema = new mongoose.Schema({
-  branchId: {
+const accountsSchema = new mongoose.Schema({
+  paymentPlanId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Branches", 
-    required: true,
+    ref: "CustomerPaymentPlan", 
+    required: false,
   },
-  tnr_Code: {
+  customerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Customer", 
+    required: false,
+  },
+  amount: {
     type: String,
     required: true,
   },
-  tnr_Name: {
+  isCredit: {
+    type: Boolean,
+    required: false,
+  },
+  remarks: {
     type: String,
+    required: false,
+  },
+  actionDate: {
+    type:Date,
     required: true,
   },
-  tnr_Email: {
+  paymentTypeId: {
     type: String,
     required: true,
-  },
-  tnr_MobileNo: {
-    type: String,
-    required: true,
-  },
-  tnr_Addresses: {
-    type: String,
-    required:true,
   },
   isDeleted: {
     type: Boolean,
@@ -49,6 +54,6 @@ const trainerSchema = new mongoose.Schema({
   },
 });
 
-const Trainer = mongoose.model("Trainers", trainerSchema);
+const Accounts = mongoose.model("Accounts", accountsSchema);
 
-module.exports = Trainer;
+module.exports = Accounts;

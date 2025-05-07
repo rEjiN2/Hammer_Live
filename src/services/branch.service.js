@@ -130,7 +130,7 @@ const getBranchById = async (branchId) => {
     }
 }
 
-const getAllBranchs = async () => {
+const getAllBranchAutocomplete = async () => {
     try {
         const branchs = await Branch.find();
         return branchs;
@@ -140,11 +140,57 @@ const getAllBranchs = async () => {
     }
 }
 
+const getAllBranchs = async (query) => {
+    try {
+        let { pageNo, pageSize, bch_Code, bch_Location, bch_Name } = query;
+
+        pageNo = parseInt(pageNo) || 1;
+        pageSize = parseInt(pageSize) || 15;
+        const skip = (pageNo - 1) * pageSize;
+
+        // Build filter object
+        const filters = {};
+        if (bch_Code) {
+            filters.bch_Code = { $regex: bch_Code, $options: 'i' };
+        }
+        if (bch_Location) {
+            filters.bch_Location = { $regex: bch_Location, $options: 'i' };
+        }
+        if (bch_Name) {
+            filters.bch_Name = { $regex: bch_Name, $options: 'i' };
+        }
+
+        const branchs = await Branch.find(filters)
+            .skip(skip)
+            .limit(pageSize)
+            .lean();
+
+        const totalCount = await Branch.countDocuments(filters);
+
+        return {
+            branchs,
+            pagination: {
+                currentPage: pageNo,
+                pageSize: pageSize,
+                totalPages: Math.ceil(totalCount / pageSize),
+                totalCount,
+                hasNextPage: pageNo * pageSize < totalCount,
+                hasPreviousPage: pageNo > 1,
+            }
+        };
+    } catch (error) {
+        console.log("error - ", error);
+        throw new Error(error.message);
+    }
+};
+
+
 module.exports = {
     createBranch,
     findBranchById,
     getBranchById,
     getBranchByEmail,
     getAllBranchs,
-    updateBranch
+    updateBranch,
+    getAllBranchAutocomplete
 }

@@ -2,7 +2,8 @@ const branchService = require("../services/branch.service")
 
 const getAllBranch = async (req, res) => {
     try {
-        const branchs = await branchService.getAllBranchs();
+        const { branchs, pagination } = await branchService.getAllBranchs(req.query);
+        res.set('X-Pagination', JSON.stringify(pagination)); // Now handled in controller
         return res.status(200).send(branchs);
     } catch (error) {
         return res.status(500).send({ error: error.message })
@@ -32,7 +33,7 @@ const updateBranch = async (req, res) => {
 
 const getAllBranchAutocomplete = async (req, res) => {
     try {
-        const branches = await branchService.getAllBranchs();
+        const branches = await branchService.getAllBranchAutocomplete();
         const filteredBranches = branches.map(branch => ({
             _id: branch._id,
             bch_Name: branch.bch_Name,

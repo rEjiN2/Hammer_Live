@@ -1,31 +1,31 @@
 const mongoose = require("mongoose");
 
 
-const trainerSchema = new mongoose.Schema({
-  branchId: {
+const customerPaymentPlanSchema = new mongoose.Schema({
+  customerId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Branches", 
+    ref: "Customer", 
     required: true,
   },
-  tnr_Code: {
+  paymentPlanId: {
     type: String,
     required: true,
   },
-  tnr_Name: {
-    type: String,
+  payableAmount: {
+    type: Number,
     required: true,
   },
-  tnr_Email: {
-    type: String,
+  paidAmount: {
+    type: Number,
     required: true,
   },
-  tnr_MobileNo: {
-    type: String,
+  planStartDate: {
+    type:Date,
     required: true,
   },
-  tnr_Addresses: {
-    type: String,
-    required:true,
+  planEndDate: {
+    type:Date,
+    required: true,
   },
   isDeleted: {
     type: Boolean,
@@ -49,6 +49,6 @@ const trainerSchema = new mongoose.Schema({
   },
 });
 
-const Trainer = mongoose.model("Trainers", trainerSchema);
+const CustomerPaymentPlan = mongoose.model("CustomerPaymentPlan", customerPaymentPlanSchema);
 
-module.exports = Trainer;
+module.exports = CustomerPaymentPlan;

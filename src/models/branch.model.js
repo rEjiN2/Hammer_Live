@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 const branchSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "users", 
+    ref: "Users", 
     required: true,
   },
   bch_Code: {
@@ -57,7 +57,7 @@ const branchSchema = new mongoose.Schema({
   },
   lastUpdatedBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "users",
+    ref: "Users",
   },
   lastUpdatedDate: {
     type:Date,
@@ -65,6 +65,6 @@ const branchSchema = new mongoose.Schema({
   },
 });
 
-const Branch = mongoose.model("branches", branchSchema);
+const Branch = mongoose.model("Branches", branchSchema);
 
 module.exports = Branch;

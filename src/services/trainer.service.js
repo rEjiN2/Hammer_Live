@@ -81,30 +81,43 @@ const updateTrainer = async (trainerId, updateData) => {
 
 const getAllTrainer = async (query) => {
     try {
-        let { pageNo, pageSize } = query;
+        let { pageNo, pageSize, tnr_MobileNo, tnr_Email, tnr_Name, tnr_Code, branchId, bch_Code } = query;
 
         pageNo = parseInt(pageNo) || 1;
         pageSize = parseInt(pageSize) || 15;
         const skip = (pageNo - 1) * pageSize;
 
-        // Use projection to limit fields fetched
-        var trainers = await Trainer.find({}, "tnr_Code tnr_Name tnr_Email tnr_MobileNo tnr_Addresses branchId")
+        // Build filters
+        const filters = {};
+        if (tnr_MobileNo) filters.tnr_MobileNo = { $regex: tnr_MobileNo, $options: 'i' };
+        if (tnr_Email) filters.tnr_Email = { $regex: tnr_Email, $options: 'i' };
+        if (tnr_Name) filters.tnr_Name = { $regex: tnr_Name, $options: 'i' };
+        if (tnr_Code) filters.tnr_Code = { $regex: tnr_Code, $options: 'i' };
+        if (branchId) filters.branchId = branchId;
+
+        // Fetch trainers with filters and pagination
+        var trainers = await Trainer.find(filters, "tnr_Code tnr_Name tnr_Email tnr_MobileNo tnr_Addresses branchId")
             .populate({
                 path: "branchId",
-                select: "bch_Code bch_Name _id", // Avoid redundant `bch_Code`
+                select: "bch_Code bch_Name _id",
+                match: {
+                    ...(bch_Code ? { bch_Code: { $regex: bch_Code, $options: 'i' } } : {})
+                }
             })
             .skip(skip)
             .limit(pageSize)
-            .lean();  // Use `.lean()` for better performance
+            .lean();
 
-        trainers = trainers.map(({ branchId, ...trainer }) => ({    
-            ...trainer,
-            branch: branchId, // Assign populated branch details
-            branchId: branchId?._id
-        }));
+        // Filter out unmatched populated branches
+        trainers = trainers
+            .filter(t => t.branchId) 
+            .map(({ branchId, ...trainer }) => ({
+                ...trainer,
+                branch: branchId,
+                branchId: branchId?._id
+            }));
 
-        // Use estimated count for faster results
-        const totalCount = await Trainer.estimatedDocumentCount();
+        const totalCount = await Trainer.countDocuments(filters);
 
         return {
             trainers,
@@ -121,6 +134,7 @@ const getAllTrainer = async (query) => {
         throw new Error(error.message);
     }
 };
+
 
 
 module.exports = {

@@ -1,5 +1,8 @@
 const Customer = require('../models/customer.model.js');
+const DietPlan = require('../models/dietplan.model.js');
 const CustomError = require("../utils/CustomError.js");
+const paymentService = require("../services/payment.service.js")
+
 const { generateCustomerCode } = require("../shared/helper-functions/code-generator.js");
 
 const createCustomer = async (customerData, userData) => {
@@ -35,9 +38,9 @@ const createCustomer = async (customerData, userData) => {
             ctr_WhatsAppNo,
             ctr_Height,
             ctr_Weight,
-            ctr_PaymentPlanId,
-            ctr_CustomPaymentPlanStartDate,
-            ctr_CustomPaymentPlanEndDate,
+            // ctr_PaymentPlanId,
+            // ctr_CustomPaymentPlanStartDate,
+            // ctr_CustomPaymentPlanEndDate,
             createdBy: userData.userId,
             createdDate: new Date(),
             lastUpdatedBy: userData.userId,
@@ -88,30 +91,48 @@ const updateCustomer = async (customerId, updateData) => {
 
 const getAllCustomer = async (query) => {
     try {
-        let { pageNo, pageSize } = query;
+        let { pageNo, pageSize, ctr_Code, ctr_Name, bch_Code, bch_Name, ctr_Email, ctr_MobileNo, ctr_WhatsAppNo, branchId } = query;
 
         pageNo = parseInt(pageNo) || 1;
         pageSize = parseInt(pageSize) || 15;
         const skip = (pageNo - 1) * pageSize;
 
-        // Use projection to limit fields fetched
-        var customers = await Customer.find({}, "ctr_Code ctr_Name ctr_Email ctr_MobileNo ctr_Addresses ctr_Dob ctr_WhatsAppNo ctr_Height ctr_Weight ctr_PaymentPlanId ctr_CustomPaymentPlanStartDate ctr_CustomPaymentPlanEndDate branchId")
+        // Build dynamic filters
+        const filters = {};
+
+        if (ctr_Code) filters.ctr_Code = { $regex: ctr_Code, $options: 'i' };
+        if (ctr_Name) filters.ctr_Name = { $regex: ctr_Name, $options: 'i' };
+        if (ctr_Email) filters.ctr_Email = { $regex: ctr_Email, $options: 'i' };
+        if (ctr_MobileNo) filters.ctr_MobileNo = { $regex: ctr_MobileNo, $options: 'i' };
+        if (ctr_WhatsAppNo) filters.ctr_WhatsAppNo = { $regex: ctr_WhatsAppNo, $options: 'i' };
+        if (query.branchId) filters.branchId = query.branchId;
+
+        // Note: bch_Code and bch_Name are in the populated `branchId` object.
+        // For filtering them, you'll need to use aggregation OR a `$lookup` approach,
+        // but for simplicity here, we filter only base-level fields.
+
+        var customers = await Customer.find(filters, "ctr_Code ctr_Name ctr_Email ctr_MobileNo ctr_Addresses ctr_Dob ctr_WhatsAppNo ctr_Height ctr_Weight ctr_PaymentPlanId ctr_CustomPaymentPlanStartDate ctr_CustomPaymentPlanEndDate branchId")
             .populate({
                 path: "branchId",
-                select: "bch_Code bch_Name _id", // Avoid redundant `bch_Code`
+                select: "bch_Code bch_Name _id",
+                match: {
+                    ...(bch_Code ? { bch_Code: { $regex: bch_Code, $options: 'i' } } : {}),
+                    ...(bch_Name ? { bch_Name: { $regex: bch_Name, $options: 'i' } } : {}),
+                }
             })
             .skip(skip)
             .limit(pageSize)
-            .lean();  // Use `.lean()` for better performance
+            .lean();
 
-        customers = customers.map(({ branchId, ...customer }) => ({    
-            ...customer,
-            branch: branchId, // Assign populated branch details
-            branchId: branchId?._id
-        }));
+        customers = customers
+            .filter(c => c.branchId)  // Filter out null-populated branches due to unmatched `match`
+            .map(({ branchId, ...customer }) => ({
+                ...customer,
+                branch: branchId,
+                branchId: branchId?._id
+            }));
 
-        // Use estimated count for faster results
-        const totalCount = await Customer.estimatedDocumentCount();
+        const totalCount = await Customer.countDocuments(filters); // Count using same filters
 
         return {
             customers,
@@ -130,8 +151,55 @@ const getAllCustomer = async (query) => {
 };
 
 
+const getCustomerDetailsById = async (customerId) => {
+    try {
+        if (!customerId) {
+            throw new Error("Customer ID is required");
+        }
+
+        // Fetch customer info with branch details
+        const customer = await Customer.findById(customerId,
+            "ctr_Code ctr_Name ctr_Email ctr_MobileNo ctr_Addresses ctr_Dob ctr_WhatsAppNo ctr_Height ctr_Weight ctr_PaymentPlanId ctr_CustomPaymentPlanStartDate ctr_CustomPaymentPlanEndDate branchId"
+        )
+        .populate({
+            path: "branchId",
+            select: "bch_Code bch_Name _id"
+        })
+        .lean();
+
+        if (!customer) {
+            throw new Error("Customer not found");
+        }
+
+        // Format branch info
+        customer.branch = customer.branchId;
+        customer.branchId = customer.branchId?._id;
+
+        // Fetch all diet plans for the customer (excluding deleted ones)
+        const dietPlans = await DietPlan.find(
+            { customerId: customerId, isDeleted: { $ne: true } }, // Exclude soft deleted
+            "-isDeleted" // Exclude IsDeleted field from response
+        ).lean();
+
+        const { paymentPlan } = await paymentService.getCustomerPaymentPlansByCustomerId(customerId);
+
+        return {
+            customerInfo: customer,
+            customerDietPlan: dietPlans || [],
+            paymentPlan: paymentPlan || []
+        };
+        
+    } catch (error) {
+        throw new Error(error.message);
+    }
+};
+
+
+
+
 module.exports = {
     createCustomer,
     updateCustomer,
-    getAllCustomer
+    getAllCustomer,
+    getCustomerDetailsById
 }

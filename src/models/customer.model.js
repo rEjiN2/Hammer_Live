@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 const customerSchema = new mongoose.Schema({
   branchId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "branches", 
+    ref: "Branches", 
     required: true,
   },
   ctr_Code: {
@@ -43,16 +43,16 @@ const customerSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  ctr_PaymentPlanId: {
-    type: String,
-    required: true,
-  },
-  ctr_CustomPaymentPlanStartDate: {
-    type: Date,
-  },
-  ctr_CustomPaymentPlanEndDate: {
-    type: Date,
-  },
+  // ctr_PaymentPlanId: {
+  //   type: String,
+  //   required: true,
+  // },
+  // ctr_CustomPaymentPlanStartDate: {
+  //   type: Date,
+  // },
+  // ctr_CustomPaymentPlanEndDate: {
+  //   type: Date,
+  // },
   isDeleted: {
     type: Boolean,
     default:false
@@ -75,6 +75,6 @@ const customerSchema = new mongoose.Schema({
   },
 });
 
-const Customer = mongoose.model("customer", customerSchema);
+const Customer = mongoose.model("Customer", customerSchema);
 
 module.exports = Customer;

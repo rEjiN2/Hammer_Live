@@ -1,30 +1,31 @@
 const mongoose = require("mongoose");
 
 
-const userSchema = new mongoose.Schema({
-  firstName: {
+const paymentSchema = new mongoose.Schema({
+  customerPaymentPlanId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "CustomerPaymentPlan", 
+    required: true,
+  },
+  amount: {
     type: String,
     required: true,
   },
-  lastName: {
+  paymentDate: {
+    type:Date,
+    required: true,
+  },
+  paymentMethod: {
     type: String,
     required: true,
   },
-  password: {
-    type: String,
-    required: true,
-  },
-  email: {
-    type: String,
-    required: true,
-  },
-  role: {
-    type: String,
-    default:'2'
+  isDeleted: {
+    type: Boolean,
+    default:false
   },
   createdBy:{
     type:String,
-    required:false
+    required:true
   },
   createdDate:{
     type:Date,
@@ -38,12 +39,8 @@ const userSchema = new mongoose.Schema({
     type:Date,
     default: Date.now(),
   },
-},
-{
-  timestamps: true,
-}
-);
+});
 
-const User = mongoose.model("Users", userSchema);
+const Payment = mongoose.model("Payment", paymentSchema);
 
-module.exports = User;
+module.exports = Payment;

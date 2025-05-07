@@ -1,20 +1,17 @@
 const mongoose = require("mongoose");
 
-const attendanceSchema = new mongoose.Schema({
+const dietPlanSchema = new mongoose.Schema({
   customerId: {
     type: String,
+    ref: "Customer",
     required: true,
   },
-  checkinTime: {
-    type: Date, 
+  dietKey: {
+    type: String, 
     required: true,
   },
-  checkOutTime: {
-    type: Date,
-    required: false, 
-  },
-  attendanceDate: {
-    type: Date,
+  dietValue: {
+    type: String, 
     required: true,
   },
   isDeleted: {
@@ -39,6 +36,6 @@ const attendanceSchema = new mongoose.Schema({
   },
 });
 
-const Attendance = mongoose.model("Attendance", attendanceSchema);
+const DietPlan = mongoose.model("DietPlan", dietPlanSchema);
 
-module.exports = Attendance;
+module.exports = DietPlan;
